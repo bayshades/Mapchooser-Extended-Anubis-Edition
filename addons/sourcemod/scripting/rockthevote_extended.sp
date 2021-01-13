@@ -140,40 +140,6 @@ public void OnClientDisconnect(int client)
 	if(g_Voted[client])
 	{
 		g_Votes--;
-		g_Voted[client] = false;
-	}
-
-	g_Voters = GetTeamClientCount(2) + GetTeamClientCount(3);
-	g_VotesNeeded = RoundToFloor(float(g_Voters) * g_Cvar_Needed.FloatValue);
-
-	if (!g_CanRTV)
-	{
-		return;
-	}
-
-	if (g_Votes &&
-		g_Voters &&
-		g_Votes >= g_VotesNeeded &&
-		g_RTVAllowed )
-	{
-		if (g_Cvar_RTVPostVoteAction.IntValue == 1 && HasEndOfMapVoteFinished())
-		{
-			return;
-		}
-
-		StartRTV();
-	}
-}
-
-public void OnClientDisconnect_Post(int client)
-{
-	if(IsFakeClient(client))
-		return;
-
-	if(g_Voted[client])
-	{
-		g_Votes--;
-		g_Voted[client] = false;
 	}
 
 	g_Voters = GetTeamClientCount(2) + GetTeamClientCount(3);
@@ -273,9 +239,14 @@ void AttemptRTV(int client)
 
 	if (g_Voted[client])
 	{
+		g_Voters = GetTeamClientCount(2) + GetTeamClientCount(3);
+		g_VotesNeeded = RoundToFloor(float(g_Voters) * GetConVarFloat(g_Cvar_Needed));
 		ReplyToCommand(client, "[SM] %t", "Already Voted", g_Votes, g_VotesNeeded);
 		return;
 	}
+	
+	g_Voters = GetTeamClientCount(2) + GetTeamClientCount(3);
+	g_VotesNeeded = RoundToFloor(float(g_Voters) * GetConVarFloat(g_Cvar_Needed));
 
 	char name[MAX_NAME_LENGTH];
 	GetClientName(client, name, sizeof(name));

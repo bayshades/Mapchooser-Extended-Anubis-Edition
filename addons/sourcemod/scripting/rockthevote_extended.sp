@@ -39,7 +39,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define MCE_VERSION "1.13.1"
+#define MCE_VERSION "1.13.1-A"
 
 public Plugin myinfo =
 {
@@ -126,9 +126,6 @@ public void OnClientConnected(int client)
 
 	g_Voted[client] = false;
 
-	g_Voters = GetTeamClientCount(2) + GetTeamClientCount(3);
-	g_VotesNeeded = RoundToFloor(float(g_Voters) * g_Cvar_Needed.FloatValue);
-
 	return;
 }
 
@@ -142,7 +139,16 @@ public void OnClientDisconnect(int client)
 		g_Votes--;
 	}
 
-	g_Voters = GetTeamClientCount(2) + GetTeamClientCount(3);
+	int NotBots = 0;
+
+	for(int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientConnected(i) && !IsFakeClient(i) && !IsClientObserver(i)) 
+		{NotBots++;}
+	}
+
+	g_Voters = NotBots;
+
 	g_VotesNeeded = RoundToFloor(float(g_Voters) * g_Cvar_Needed.FloatValue);
 
 	if (!g_CanRTV)
@@ -171,7 +177,16 @@ public void OnPlayerChangedTeam(Handle event, const char[] name, bool dontBroadc
 		GetClientTeam(client) == 0 || GetClientTeam(client) == 1)
 		return;
 
-	g_Voters = GetTeamClientCount(2) + GetTeamClientCount(3);
+	int NotBots = 0;
+
+	for(int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientConnected(i) && !IsFakeClient(i) && !IsClientObserver(i)) 
+		{NotBots++;}
+	}
+
+	g_Voters = NotBots;
+
 	g_VotesNeeded = RoundToFloor(float(g_Voters) * GetConVarFloat(g_Cvar_Needed));
 
 	if (g_Votes &&
@@ -219,6 +234,17 @@ public Action Command_RTV(int client, int args)
 
 void AttemptRTV(int client)
 {
+	int NotBots = 0;
+
+	for(int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientConnected(i) && !IsFakeClient(i) && !IsClientObserver(i)) 
+		{NotBots++;}
+	}
+	g_Voters = NotBots;
+
+	g_VotesNeeded = RoundToFloor(float(g_Voters) * GetConVarFloat(g_Cvar_Needed));
+	
 	if (!g_RTVAllowed  || (g_Cvar_RTVPostVoteAction.IntValue == 1 && HasEndOfMapVoteFinished()))
 	{
 		ReplyToCommand(client, "[SM] %t", "RTV Not Allowed");
@@ -239,14 +265,9 @@ void AttemptRTV(int client)
 
 	if (g_Voted[client])
 	{
-		g_Voters = GetTeamClientCount(2) + GetTeamClientCount(3);
-		g_VotesNeeded = RoundToFloor(float(g_Voters) * GetConVarFloat(g_Cvar_Needed));
 		ReplyToCommand(client, "[SM] %t", "Already Voted", g_Votes, g_VotesNeeded);
 		return;
 	}
-	
-	g_Voters = GetTeamClientCount(2) + GetTeamClientCount(3);
-	g_VotesNeeded = RoundToFloor(float(g_Voters) * GetConVarFloat(g_Cvar_Needed));
 
 	char name[MAX_NAME_LENGTH];
 	GetClientName(client, name, sizeof(name));

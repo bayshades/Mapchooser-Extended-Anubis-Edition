@@ -143,8 +143,11 @@ public void OnClientDisconnect(int client)
 
 	for(int i = 1; i <= MaxClients; i++)
 	{
-		if (IsClientConnected(i) && !IsFakeClient(i) && !IsClientObserver(i)) 
-		{NotBots++;}
+		if (IsClientInGame(i))
+		{
+			if (IsClientConnected(i) && !IsFakeClient(i) && !IsClientObserver(i)) 
+			{NotBots++;}
+		}
 	}
 
 	g_Voters = NotBots;
@@ -181,8 +184,11 @@ public void OnPlayerChangedTeam(Handle event, const char[] name, bool dontBroadc
 
 	for(int i = 1; i <= MaxClients; i++)
 	{
-		if (IsClientConnected(i) && !IsFakeClient(i) && !IsClientObserver(i)) 
-		{NotBots++;}
+		if (IsClientInGame(i))
+		{
+			if (IsClientConnected(i) && !IsFakeClient(i) && !IsClientObserver(i)) 
+			{NotBots++;}
+		}
 	}
 
 	g_Voters = NotBots;
@@ -238,8 +244,11 @@ void AttemptRTV(int client)
 
 	for(int i = 1; i <= MaxClients; i++)
 	{
-		if (IsClientConnected(i) && !IsFakeClient(i) && !IsClientObserver(i)) 
-		{NotBots++;}
+		if (IsClientInGame(i))
+		{
+			if (IsClientConnected(i) && !IsFakeClient(i) && !IsClientObserver(i)) 
+			{NotBots++;}
+		}
 	}
 	g_Voters = NotBots;
 

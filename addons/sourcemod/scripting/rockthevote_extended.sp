@@ -35,6 +35,7 @@
 #include <sdktools_functions>
 #include <mapchooser>
 #include <nextmap>
+#include <colors_csgo>
 
 #pragma semicolon 1
 #pragma newdecls required
@@ -56,6 +57,13 @@ ConVar g_Cvar_InitialDelay;
 ConVar g_Cvar_Interval;
 ConVar g_Cvar_ChangeTime;
 ConVar g_Cvar_RTVPostVoteAction;
+
+float g_Needed;
+int g_MinPlayers;
+float g_InitialDelay;
+float g_Interval;
+int g_ChangeTime;
+int g_RTVPostVoteAction;
 
 bool g_CanRTV = false;		// True if RTV loaded maps and is active.
 bool g_RTVAllowed = false;	// True if RTV is available to players. Used to delay rtv votes.
@@ -79,10 +87,18 @@ public void OnPluginStart()
 	g_Cvar_ChangeTime = CreateConVar("sm_rtv_changetime", "0", "When to change the map after a succesful RTV: 0 - Instant, 1 - RoundEnd, 2 - MapEnd", _, true, 0.0, true, 2.0);
 	g_Cvar_RTVPostVoteAction = CreateConVar("sm_rtv_postvoteaction", "0", "What to do with RTV's after a mapvote has completed. 0 - Allow, success = instant change, 1 - Deny", _, true, 0.0, true, 1.0);
 
+	g_Needed = g_Cvar_Needed.FloatValue;
+	g_MinPlayers = g_Cvar_MinPlayers.IntValue;
+	g_InitialDelay = g_Cvar_InitialDelay.FloatValue;
+	g_Interval = g_Cvar_Interval.FloatValue;
+	g_ChangeTime = g_Cvar_ChangeTime.IntValue;
+	g_RTVPostVoteAction = g_Cvar_RTVPostVoteAction.IntValue;
+
 	RegConsoleCmd("sm_rtv", Command_RTV);
 	RegAdminCmd("sm_forcertv", Command_ForceRTV, ADMFLAG_CHANGEMAP, "Force an RTV vote");
 	RegAdminCmd("sm_disablertv", Command_DisableRTV, ADMFLAG_CHANGEMAP, "Disable the RTV command");
 	RegAdminCmd("sm_enablertv", Command_EnableRTV, ADMFLAG_CHANGEMAP, "Enable the RTV command");
+	RegAdminCmd("sm_playersrtv", Command_PlayersRTV, ADMFLAG_CHANGEMAP, "Count Players Online in Game");
 
 	HookEvent("player_team", OnPlayerChangedTeam);
 
@@ -116,7 +132,15 @@ public void OnConfigsExecuted()
 {
 	g_CanRTV = true;
 	g_RTVAllowed = false;
-	CreateTimer(g_Cvar_InitialDelay.FloatValue, Timer_DelayRTV, _, TIMER_FLAG_NO_MAPCHANGE);
+
+	g_Needed = g_Cvar_Needed.FloatValue;
+	g_MinPlayers = g_Cvar_MinPlayers.IntValue;
+	g_InitialDelay = g_Cvar_InitialDelay.FloatValue;
+	g_Interval = g_Cvar_Interval.FloatValue;
+	g_ChangeTime = g_Cvar_ChangeTime.IntValue;
+	g_RTVPostVoteAction = g_Cvar_RTVPostVoteAction.IntValue;
+
+	CreateTimer(g_InitialDelay, Timer_DelayRTV, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public void OnClientConnected(int client)
@@ -152,7 +176,7 @@ public void OnClientDisconnect(int client)
 
 	g_Voters = NotBots;
 
-	g_VotesNeeded = RoundToFloor(float(g_Voters) * g_Cvar_Needed.FloatValue);
+	g_VotesNeeded = RoundToFloor(float(g_Voters) * g_Needed);
 
 	if (!g_CanRTV)
 	{
@@ -164,13 +188,34 @@ public void OnClientDisconnect(int client)
 		g_Votes >= g_VotesNeeded &&
 		g_RTVAllowed )
 	{
-		if (g_Cvar_RTVPostVoteAction.IntValue == 1 && HasEndOfMapVoteFinished())
+		if (g_RTVPostVoteAction == 1 && HasEndOfMapVoteFinished())
 		{
 			return;
 		}
 
 		StartRTV();
 	}
+}
+
+public Action Command_PlayersRTV(int client, int arg)
+{
+	int NotBots = 0;
+
+	CPrintToChat(client, "{red}----------{grey}Players Count{red}----------");
+	for(int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientInGame(i))
+		{
+			if (IsClientConnected(i) && !IsFakeClient(i) && !IsClientObserver(i)) 
+			{
+				NotBots++;
+				CPrintToChat(client, " Online - {grey}%N {default}.", i);
+			}
+		}
+	}
+	CPrintToChat(client, "{red}----------{grey}Players Total {red}----------");
+	CPrintToChat(client, " Total Online -{grey} %i {default}.", NotBots);
+	CPrintToChat(client, "{red}------------------------------------");
 }
 
 public void OnPlayerChangedTeam(Handle event, const char[] name, bool dontBroadcast)
@@ -193,14 +238,14 @@ public void OnPlayerChangedTeam(Handle event, const char[] name, bool dontBroadc
 
 	g_Voters = NotBots;
 
-	g_VotesNeeded = RoundToFloor(float(g_Voters) * GetConVarFloat(g_Cvar_Needed));
+	g_VotesNeeded = RoundToFloor(float(g_Voters) * g_Needed);
 
 	if (g_Votes &&
 		g_Voters &&
 		g_Votes >= g_VotesNeeded &&
 		g_RTVAllowed )
 	{
-		if (g_Cvar_RTVPostVoteAction.IntValue == 1 && HasEndOfMapVoteFinished())
+		if (g_RTVPostVoteAction == 1 && HasEndOfMapVoteFinished())
 		{
 			return;
 		}
@@ -252,9 +297,9 @@ void AttemptRTV(int client)
 	}
 	g_Voters = NotBots;
 
-	g_VotesNeeded = RoundToFloor(float(g_Voters) * GetConVarFloat(g_Cvar_Needed));
+	g_VotesNeeded = RoundToFloor(float(g_Voters) * g_Needed);
 	
-	if (!g_RTVAllowed  || (g_Cvar_RTVPostVoteAction.IntValue == 1 && HasEndOfMapVoteFinished()))
+	if (!g_RTVAllowed  || (g_RTVPostVoteAction == 1 && HasEndOfMapVoteFinished()))
 	{
 		ReplyToCommand(client, "[SM] %t", "RTV Not Allowed");
 		return;
@@ -266,7 +311,7 @@ void AttemptRTV(int client)
 		return;
 	}
 
-	if (GetClientCount(true) < g_Cvar_MinPlayers.IntValue)
+	if (GetClientCount(true) < g_MinPlayers)
 	{
 		ReplyToCommand(client, "[SM] %t", "Minimal Players Not Met");
 		return;
@@ -325,13 +370,13 @@ void StartRTV()
 
 	if (CanMapChooserStartVote())
 	{
-		MapChange when = view_as<MapChange>(g_Cvar_ChangeTime.IntValue);
+		MapChange when = view_as<MapChange>(g_ChangeTime);
 		InitiateMapChooserVote(when);
 
 		ResetRTV();
 
 		g_RTVAllowed = false;
-		CreateTimer(g_Cvar_Interval.FloatValue, Timer_DelayRTV, _, TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(g_Interval, Timer_DelayRTV, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
 

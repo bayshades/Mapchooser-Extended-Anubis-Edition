@@ -95,7 +95,14 @@
 * sm_forcertv - Force an RTV vote.
 * sm_disablertv - Disable the RTV command.
 * sm_enablertv - Enable the RTV command.
+* sm_playersrtv - Count Players Online in Game.
 
+### Mapchooser Extended Create .cfg:
+
+## Standard configuration file creation file for those who have a lot of maps. You can disable it after creating the files.
+
+-- Admin --
+* sm_mcecreatecfg - Usage: sm_mcecreatecfg <prefix>. Exemple prefix ze zm.
 
 ### For Plugin Developers - Mapchooser Extended Forwards:
 * OnMapVoteStarted(const String:map[]) - Called at the start of a map vote, part of MapChooser

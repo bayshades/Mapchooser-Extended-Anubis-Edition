@@ -57,6 +57,8 @@ ConVar g_Cvar_InitialDelay;
 ConVar g_Cvar_Interval;
 ConVar g_Cvar_ChangeTime;
 ConVar g_Cvar_RTVPostVoteAction;
+ConVar g_Cvar_AllowBots;
+ConVar g_Cvar_AllowSpec;
 
 float g_Needed;
 int g_MinPlayers;
@@ -74,6 +76,10 @@ bool g_Voted[MAXPLAYERS+1] = {false, ...};
 
 bool g_InChange = false;
 
+ // Isvalid Client
+bool bzrAllowBots = false;
+bool bzrAllowSpec = false;
+
 public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
@@ -86,6 +92,8 @@ public void OnPluginStart()
 	g_Cvar_Interval = CreateConVar("sm_rtv_interval", "240.0", "Time (in seconds) after a failed RTV before another can be held", 0, true, 0.00);
 	g_Cvar_ChangeTime = CreateConVar("sm_rtv_changetime", "0", "When to change the map after a succesful RTV: 0 - Instant, 1 - RoundEnd, 2 - MapEnd", _, true, 0.0, true, 2.0);
 	g_Cvar_RTVPostVoteAction = CreateConVar("sm_rtv_postvoteaction", "0", "What to do with RTV's after a mapvote has completed. 0 - Allow, success = instant change, 1 - Deny", _, true, 0.0, true, 1.0);
+	g_Cvar_AllowBots = CreateConVar("sm_rtv_allowbots", "0", "Allow bots to be counted on RTV? 1-Yes 0-No.");
+	g_Cvar_AllowSpec = CreateConVar("sm_rtv_allowspec", "1", "Allow dead/observer/spectator to be counted and vote on RTV? 1-Yes 0-No.");
 
 	g_Needed = g_Cvar_Needed.FloatValue;
 	g_MinPlayers = g_Cvar_MinPlayers.IntValue;
@@ -93,12 +101,14 @@ public void OnPluginStart()
 	g_Interval = g_Cvar_Interval.FloatValue;
 	g_ChangeTime = g_Cvar_ChangeTime.IntValue;
 	g_RTVPostVoteAction = g_Cvar_RTVPostVoteAction.IntValue;
+	bzrAllowBots = g_Cvar_AllowBots.BoolValue;
+	bzrAllowSpec = g_Cvar_AllowSpec.BoolValue;
 
 	RegConsoleCmd("sm_rtv", Command_RTV);
 	RegAdminCmd("sm_forcertv", Command_ForceRTV, ADMFLAG_CHANGEMAP, "Force an RTV vote");
 	RegAdminCmd("sm_disablertv", Command_DisableRTV, ADMFLAG_CHANGEMAP, "Disable the RTV command");
 	RegAdminCmd("sm_enablertv", Command_EnableRTV, ADMFLAG_CHANGEMAP, "Enable the RTV command");
-	RegAdminCmd("sm_playersrtv", Command_PlayersRTV, ADMFLAG_CHANGEMAP, "Count Players Online in Game");
+	RegConsoleCmd("sm_playersrtv", Command_PlayersRTV, "Count Players Online in Game");
 
 	HookEvent("player_team", OnPlayerChangedTeam);
 
@@ -139,6 +149,8 @@ public void OnConfigsExecuted()
 	g_Interval = g_Cvar_Interval.FloatValue;
 	g_ChangeTime = g_Cvar_ChangeTime.IntValue;
 	g_RTVPostVoteAction = g_Cvar_RTVPostVoteAction.IntValue;
+	bzrAllowBots = g_Cvar_AllowBots.BoolValue;
+	bzrAllowSpec = g_Cvar_AllowSpec.BoolValue;
 
 	CreateTimer(g_InitialDelay, Timer_DelayRTV, _, TIMER_FLAG_NO_MAPCHANGE);
 }
@@ -163,18 +175,17 @@ public void OnClientDisconnect(int client)
 		g_Votes--;
 	}
 
-	int NotBots = 0;
+	int i_players = 0;
 
 	for(int i = 1; i <= MaxClients; i++)
 	{
-		if (IsClientInGame(i))
+		if(IsValidClient(i))
 		{
-			if (IsClientConnected(i) && !IsFakeClient(i) && !IsClientObserver(i)) 
-			{NotBots++;}
+			i_players++;
 		}
 	}
 
-	g_Voters = NotBots;
+	g_Voters = i_players;
 
 	g_VotesNeeded = RoundToFloor(float(g_Voters) * g_Needed);
 
@@ -199,44 +210,43 @@ public void OnClientDisconnect(int client)
 
 public Action Command_PlayersRTV(int client, int arg)
 {
-	int NotBots = 0;
+	int i_players = 0;
 
 	CPrintToChat(client, "{red}----------{grey}Players Count{red}----------");
 	for(int i = 1; i <= MaxClients; i++)
 	{
-		if (IsClientInGame(i))
+		if(IsValidClient(i))
 		{
-			if (IsClientConnected(i) && !IsFakeClient(i) && !IsClientObserver(i)) 
-			{
-				NotBots++;
-				CPrintToChat(client, " Online - {grey}%N {default}.", i);
-			}
+			i_players++;
+			CPrintToChat(client, " Online - {grey}%N {default}.", i);
 		}
 	}
 	CPrintToChat(client, "{red}----------{grey}Players Total {red}----------");
-	CPrintToChat(client, " Total Online -{grey} %i {default}.", NotBots);
+	CPrintToChat(client, " Total Online -{grey} %i {default}.", i_players);
 	CPrintToChat(client, "{red}------------------------------------");
 }
 
 public void OnPlayerChangedTeam(Handle event, const char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	if(client == 0 || !IsClientConnected(client) || !IsClientInGame(client) || IsFakeClient(client) ||
-		GetClientTeam(client) == 0 || GetClientTeam(client) == 1)
+	if(g_Voted[client] && !bzrAllowSpec)
+	{
+		g_Votes--;
+	}
+	if(!IsValidClient(client))
 		return;
 
-	int NotBots = 0;
+	int i_players = 0;
 
 	for(int i = 1; i <= MaxClients; i++)
 	{
-		if (IsClientInGame(i))
+		if(IsValidClient(i))
 		{
-			if (IsClientConnected(i) && !IsFakeClient(i) && !IsClientObserver(i)) 
-			{NotBots++;}
+			i_players++;
 		}
 	}
 
-	g_Voters = NotBots;
+	g_Voters = i_players;
 
 	g_VotesNeeded = RoundToFloor(float(g_Voters) * g_Needed);
 
@@ -285,17 +295,17 @@ public Action Command_RTV(int client, int args)
 
 void AttemptRTV(int client)
 {
-	int NotBots = 0;
+	int i_players = 0;
 
 	for(int i = 1; i <= MaxClients; i++)
 	{
-		if (IsClientInGame(i))
+		if(IsValidClient(i))
 		{
-			if (IsClientConnected(i) && !IsFakeClient(i) && !IsClientObserver(i)) 
-			{NotBots++;}
+			i_players++;
 		}
 	}
-	g_Voters = NotBots;
+
+	g_Voters = i_players;
 
 	g_VotesNeeded = RoundToFloor(float(g_Voters) * g_Needed);
 	
@@ -311,7 +321,7 @@ void AttemptRTV(int client)
 		return;
 	}
 
-	if (GetClientCount(true) < g_MinPlayers)
+	if (g_Voters < g_MinPlayers)
 	{
 		ReplyToCommand(client, "[SM] %t", "Minimal Players Not Met");
 		return;
@@ -320,6 +330,11 @@ void AttemptRTV(int client)
 	if (g_Voted[client])
 	{
 		ReplyToCommand(client, "[SM] %t", "Already Voted", g_Votes, g_VotesNeeded);
+		return;
+	}
+
+	if (!IsValidClient(client))
+	{
 		return;
 	}
 
@@ -439,4 +454,11 @@ public Action Command_EnableRTV(int client, int args)
 	g_RTVAllowed = true;
 
 	return Plugin_Handled;
+}
+
+stock bool IsValidClient(int client)
+{
+	if (!(1 <= client <= MaxClients) || !IsClientInGame(client) || (IsFakeClient(client) && !bzrAllowBots) || IsClientSourceTV(client) || IsClientReplay(client) || (!bzrAllowSpec && !IsPlayerAlive(client)) || (!bzrAllowSpec && IsClientObserver(client)))
+		return false;
+	return true;
 }

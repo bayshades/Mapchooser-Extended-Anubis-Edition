@@ -38,7 +38,6 @@
 #include <mapchooser>
 #include "include/mapchooser_extended"
 #include <sdktools>
-#include <emitsoundany>
 
 #define VERSION "1.13.1"
 
@@ -248,7 +247,7 @@ public OnMapVoteWarningTick(time)
 				}
 				else
 				{
-					EmitSoundToAllAny(soundData[SoundStore_Value]);
+					EmitSoundToAll(soundData[SoundStore_Value]);
 				}
 			}
 		}
@@ -303,7 +302,7 @@ PlaySound(SoundEvent:event)
 				}
 				else
 				{
-					EmitSoundToAllAny(soundData[SoundStore_Value]);
+					EmitSoundToAll(soundData[SoundStore_Value]);
 				}
 			}
 		}
@@ -557,11 +556,11 @@ CacheSound(soundData[SoundStore])
 {
 	if (soundData[SoundStore_Type] == SoundType_Builtin)
 	{
-		PrecacheSoundAny(soundData[SoundStore_Value]);
+		PrecacheSound(soundData[SoundStore_Value]);
 	}
 	else if (soundData[SoundStore_Type] == SoundType_Sound)
 	{
-		if (PrecacheSoundAny(soundData[SoundStore_Value]))
+		if (PrecacheSound(soundData[SoundStore_Value]))
 		{
 			decl String:downloadLocation[PLATFORM_MAX_PATH];
 			Format(downloadLocation, sizeof(downloadLocation), "sound/%s", soundData[SoundStore_Value]);

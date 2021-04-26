@@ -6,6 +6,8 @@
 * Test & Compile, SouceMod 1.10.0-6490
 * Sorry for my English.
 
+https://github.com/oylsister/mapchooser-extended
+
 ### MapChooser Extended is the SourceMod Mapchooser with the following new features:
 
 * Players are warned before the vote (by countdown)

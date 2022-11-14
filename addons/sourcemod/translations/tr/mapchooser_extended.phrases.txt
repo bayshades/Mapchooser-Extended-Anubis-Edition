@@ -2,42 +2,167 @@
 {
 	"Vote Nextmap"
 	{
-		"tr"		"Sonraki harita için oy ver!"
+		"tr"			"Sonraki harita için oy ver!"
 	}
 
 	"Nextmap Voting Started"
 	{
-		"tr"		"Sonraki harita için oylama başladı."
+		"tr"			"Sonraki harita için oylama başladı."
 	}
 
 	"Nextmap Voting Finished"
 	{
-		"tr"		"Harita oylaması sona erdi. Sıradaki harita {1} olacak. ({3} oyun %%{2}'i alındı) "
+		"#format"			"{1:s},{2:i},{3:i}"
+		"tr"			"Harita oylaması sona erdi. Sıradaki harita {1} olacak. ({3} oyun %%{2}'i alındı)"
 	}
 
 	"Current Map Extended"
 	{
-		"tr"		"Geçerli harita uzatıldı. ({2} oyun %%{1}'i alındı) "
+		"#format"			"{1:i},{2:i}"
+		"tr"			"Geçerli harita uzatıldı. ({2} oyun %%{1}'i alındı)"
 	}
 
 	"Extend Map"
 	{
-		"tr"		"Geçerli Haritayı Uzat"
+		"tr"			"Geçerli Haritayı Uzat"
 	}
 
 	"Dont Change"
 	{
-		"tr"		"Değiştirme"
+		"tr"			"Değiştirme"
 	}
 
 	"Current Map Stays"
 	{
-		"tr"		"Geçerli harita devam ediyor! Oylama konuştu! ({2} oyun %%{1}'i alındı)  "
+		"#format"			"{1:i},{2:i}"
+		"tr"			"Geçerli harita devam ediyor! Oylama konuştu! ({2} oyun %%{1}'i alındı)"
 	}
 
 	"Changed Next Map"
 	{
+		"#format"		"{1:s}"
 		"tr"		"Sıradaki harita \"{1}\" olarak değiştirildi."
 	}
 
+	"Runoff Vote Nextmap"
+	{
+		"tr"		"Bir sonraki harita için ikinci turu oyla!"
+	}
+
+	"Number Of Votes"
+	{
+		"tr"		"Oy sayısı"
+	}
+
+	"Custom"
+	{
+		"#format"	"{1:s}"
+		"tr"		"{1} (Özel)"
+	}
+
+	"Revote Is Needed"
+	{
+		"#format"	"{1:i}"
+		"tr"		"Hiçbir harita bütün oyların {1}%% kadarını alamadı.\nBu durumda hangi harita seçilecek? Tekrar oylama yapılmalı!"
+	}
+
+	"Revote Warning"
+	{
+		"#format"	"{1:i}"
+		"tr"		"İkinci tur oylaması başlıyor: {1}s"
+	}
+
+	"Vote Warning"
+	{
+		"#format"	"{1:i}"
+		"tr"		"Uyarı! Sıradaki harita için yapılacak oylama başlıyor: {1}s"
+	}
+
+	"Line One"
+	{
+		"tr"		"Hangi haritayı oynamak istediğine karar ver..."
+	}
+
+	"Line Two"
+	{
+		"tr"		"...ve sakın tuşları kırma ;-)"
+	}
+
+	"Cannot Start Vote"
+	{
+		"#format"	"{1:i}"
+		"tr"		"Zaten oylama sürüyor.  Tekrar denenmesine {1}s."
+	}
+
+	"Tie Vote"
+	{
+		"#format"	"{1:i}"
+		"tr"		"İlk {1} harita aynı sayıda oy aldı.\nTekrar oylama yapımalı!"
+	}
+
+	"Custom Marked"
+	{
+		"#format"	"{1:s}"
+		"tr"		"*{1}"
+	}
+
+	"Map Nominate Time Error"
+	{
+		"#format"		"{1:d},{2:d}"
+		"tr"			"Bu haritayı {1} saat {2} dakika içerisinde 1 kez aday gösterebilirsiniz."
+	}
+
+	"Map Nominate MinPlayers Error"
+	{
+		"#format"		"{1:d}"
+		"tr"			"Harita, {1} oyuncu daha gerektiriyor."
+	}
+
+	"Map Nominate MaxPlayers Error"
+	{
+		"#format"		"{1:d}"
+		"tr"			"Harita, {1} daha az oyuncu gerektiriyor."
+	}
+
+	"Map Nominate Group Error"
+	{
+		"#format"		"{1:d}"
+		"tr"			"Bu gruptaki haritalar zaten maksimum sayıda ({1}) aday gösterildi."
+	}
+
+	"Map Time Restriction"
+	{
+		"#format"		"{1:s},{2:d},{3:d}"
+		"tr"			"Süre{1}{2}Saat{3}Dk"
+	}
+
+	"Map Player Restriction"
+	{
+		"#format"		"{1:s},{2:d}"
+		"tr"			"Oyuncular{1}{2}"
+	}
+
+	"Map Group Restriction"
+	{
+		"#format"		"{1:d}"
+		"tr"			"Grup max: {1}"
+	}
+
+	"Nomination Removed Time Error"
+	{
+		"#format"		"{1:s}"
+		"tr"			"Adayınız gösterdiğiniz {1} haritası, süre gereksinimlerini karşılamadığı için kaldırıldı."
+	}
+
+	"Nomination Removed MinPlayers Error"
+	{
+		"#format"		"{1:s}"
+		"tr"			"Aday gösterdiğiniz {1} haritası, minimum oyuncu gereksinimlerini karşılamadığından kaldırıldı."
+	}
+
+	"Nomination Removed MaxPlayers Error"
+	{
+		"#format"		"{1:s}"
+		"tr"			"Aday gösterdiğiniz {1} haritası, maksimum oyuncu kısıtlamasını aştığı için kaldırıldı."
+	}
 }

@@ -151,7 +151,7 @@
 	"Nomination Removed Time Error"
 	{
 		"#format"		"{1:s}"
-		"tr"			"Adayınız gösterdiğiniz {1} haritası, süre gereksinimlerini karşılamadığı için kaldırıldı."
+		"tr"			"Aday gösterdiğiniz {1} haritası, süre gereksinimlerini karşılamadığı için kaldırıldı."
 	}
 
 	"Nomination Removed MinPlayers Error"
